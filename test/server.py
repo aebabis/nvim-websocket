@@ -1,11 +1,18 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["websockets"]
+# ///
 """
 Simple WebSocket test server for nvim-websocket development.
 
-Requires: pip install websockets
-
 Usage:
-    python3 test/server.py [port]   (default port: 8765)
+    uv run test/server.py [port]          (recommended, no venv needed)
+    python3 test/server.py [port]         (with websockets already installed)
+    make server                           (convenience wrapper)
+    make server PORT=8766                 (custom port)
+
+Default port: 8765
 
 Behavior:
     - Echoes every text message back prefixed with "echo: "
