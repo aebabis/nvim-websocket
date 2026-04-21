@@ -58,6 +58,35 @@ function M.encode(opcode, payload, fin)
   return table.concat(header) .. table.concat(masked)
 end
 
+--- Encode a frame for sending from server to client (unmasked).
+--- @param opcode number
+--- @param payload string
+--- @param fin boolean|nil  defaults to true
+--- @return string
+function M.encode_server(opcode, payload, fin)
+  fin = (fin ~= false)
+  local plen = #payload
+  local header = {}
+  header[#header+1] = string.char(bor(fin and 0x80 or 0x00, opcode))
+  if plen <= 125 then
+    header[#header+1] = string.char(plen)
+  elseif plen <= 0xFFFF then
+    header[#header+1] = string.char(126)
+    header[#header+1] = string.char(band(rshift(plen, 8), 0xFF))
+    header[#header+1] = string.char(band(plen, 0xFF))
+  else
+    header[#header+1] = string.char(127)
+    header[#header+1] = string.char(0, 0, 0, 0)
+    header[#header+1] = string.char(
+      band(rshift(plen, 24), 0xFF),
+      band(rshift(plen, 16), 0xFF),
+      band(rshift(plen,  8), 0xFF),
+      band(plen, 0xFF)
+    )
+  end
+  return table.concat(header) .. payload
+end
+
 --- Try to decode one frame from the front of buf.
 --- Returns frame table + remaining buffer, or nil + original buffer if incomplete.
 --- @param buf string
